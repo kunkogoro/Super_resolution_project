@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">TOMATITO</string>
+    <string name="exit_app">Nhấn thêm lần nữa để thoát</string>
+    <string name="activity_introductory_skip">bỏ qua</string>
+</resources>
