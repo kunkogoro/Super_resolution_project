@@ -12,6 +12,7 @@ import com.example.super_resolution_project.R;
 import com.example.super_resolution_project.been.OneItemHome;
 import com.example.super_resolution_project.editImage.EditImageActivity;
 import com.example.super_resolution_project.imageCompressor.ImageCompressorPage;
+import com.example.super_resolution_project.superResolution.SuperResolutionActivity;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -51,6 +52,11 @@ public class HomePageItemAdapter extends RecyclerView.Adapter<HomePageItemHodel>
         }else if (position == 1){
             holder.getLayout().setOnClickListener(v -> {
                 v.getContext().startActivity(new Intent(v.getContext(), EditImageActivity.class));
+            });
+        }
+        else if (position == 2){
+            holder.getLayout().setOnClickListener(v -> {
+                v.getContext().startActivity(new Intent(v.getContext(), SuperResolutionActivity.class));
             });
         }
 

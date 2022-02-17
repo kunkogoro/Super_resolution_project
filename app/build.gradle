@@ -28,12 +28,53 @@ android {
                 install "tinify"
             }
         }
+
         sourceSets {
             main {
                 python.srcDir "src/main/python"
+            }}
+            ndk {
+                abiFilters "armeabi-v7a", "arm64-v8a", "x86", "x86_64"
             }
+            python {
+                buildPython "C:/Users/Admin/AppData/Local/Programs/Python/Python39/python.exe"
+                pip{
+//                install "numpy"
+//                install "pillow"
+                    install "imutils"
+                    install "argparse"
+//                install "scipy"
+//                install "keras"
+//                install "perspective"
+//                install "tensorflow"
+//                install "opencv-contrib-python-headless"
+
+                    install 'numpy'
+
+                    install 'matplotlib'
+
+                    install 'opencv-python'
+
+                    install 'joblib'
+
+                    install 'keras'
+
+                    install 'scikit-image'
+
+                    install 'sklearn'
+
+                    install 'tensorflow'
+
+                    install 'tensorflow_hub'
+
+                    install 'requests'
+
+                    install 'Image'
+
+                }
+            }
+            testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         }
-    }
 
     buildTypes {
         release {
