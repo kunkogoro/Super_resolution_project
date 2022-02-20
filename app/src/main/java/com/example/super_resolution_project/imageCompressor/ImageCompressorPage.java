@@ -1,9 +1,11 @@
 package com.example.super_resolution_project.imageCompressor;
 
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
 
 import android.Manifest;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
@@ -19,10 +21,14 @@ import android.widget.Toast;
 import com.chaquo.python.Python;
 import com.chaquo.python.android.AndroidPlatform;
 import com.example.super_resolution_project.R;
+
+
+import com.github.dhaval2404.imagepicker.ImagePicker;
 import com.gun0912.tedpermission.PermissionListener;
 import com.gun0912.tedpermission.normal.TedPermission;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
@@ -52,9 +58,9 @@ public class ImageCompressorPage extends AppCompatActivity {
     }
     public void eventCompressor(){
 
-        if(!Python.isStarted()){
-            Python.start(new AndroidPlatform(this));
-        }
+//        if(!Python.isStarted()){
+//            Python.start(new AndroidPlatform(this));
+//        }
 
 //        Python py = Python.getInstance();
 //        PyObject object = py.getModule("test");
@@ -65,6 +71,7 @@ public class ImageCompressorPage extends AppCompatActivity {
 //            System.out.println(path.toString());
 //            Toast.makeText(this, pyObject.toString(), Toast.LENGTH_SHORT).show();
             try {
+                System.out.println("File Pth:" + filePath);
                 compressorImage = new Compressor(ImageCompressorPage.this).
                         setQuality(70).setCompressFormat(Bitmap.CompressFormat.JPEG)
                         .setDestinationDirectoryPath(filePath).compressToFile(originalImage);
@@ -72,7 +79,7 @@ public class ImageCompressorPage extends AppCompatActivity {
                 Bitmap finalBitmap = BitmapFactory.decodeFile(finalFile.getAbsolutePath());
                 cardView5.setVisibility(View.VISIBLE);
                 imageEnd.setImageBitmap(finalBitmap);
-                size_image_end.setText("Size:" + Formatter.formatShortFileSize(ImageCompressorPage.this,finalFile.length()));
+                size_image_end.setText("Size: " + Formatter.formatShortFileSize(ImageCompressorPage.this,finalFile.length()));
                 card_size_end.setVisibility(View.VISIBLE);
             } catch (IOException e) {
                 e.printStackTrace();
@@ -85,54 +92,110 @@ public class ImageCompressorPage extends AppCompatActivity {
     }
     public void eventLoadImame(){
         cardView1.setOnClickListener(v -> {
-            requestPermissions();
+//            requestPermissions();
+            ImagePicker.with(ImageCompressorPage.this)
+//                    .galleryOnly()
+//                    .cameraOnly()
+//                    .cropSquare()
+                    .crop()	    			//Crop image(Optional), Check Customization for more option
+                    .compress(2048)			//Final image size will be less than 1 MB(Optional)
+                    .maxResultSize(1080, 1080)	//Final image resolution will be less than 1080 x 1080(Optional)
+                    .start();
         });
 
     }
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data){
+        super.onActivityResult(requestCode,resultCode,data);
+         Uri uri = data.getData();
+      //  System.out.println("Pathx: " + uri );
 
-    public void requestPermissions(){
-        PermissionListener permissionlistener = new PermissionListener() {
-            @Override
-            public void onPermissionGranted() {
-                Toast.makeText(ImageCompressorPage.this, "Permission Granted", Toast.LENGTH_SHORT).show();
-                openImage();
-            }
+       //  String abpath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES).getAbsolutePath() +uri.getPath();
+      //  System.out.println("Path0: " + abpath );
+        final InputStream imageStream;
+        try {
+            imageStream = getContentResolver().openInputStream(uri);
+            final Bitmap bitmap = BitmapFactory.decodeStream(imageStream);
+            imageStart.setImageBitmap(bitmap);
+          //  originalImage = new File(abpath.replace("storage/emulated/0/Android/data/com.example.super_resolution_project/",""));
+            originalImage = new File(uri.getPath());
+            System.out.println("Path1: " + originalImage.getAbsolutePath());
+//            System.out.println("Path11: " + originalImage.length());
+            size_image_start.setText("Size: " + Formatter.formatShortFileSize(ImageCompressorPage.this, originalImage.length()));
+         //   System.out.println("Size:" + Formatter.formatShortFileSize(ImageCompressorPage.this, originalImage.length()));
+            card_size_start.setVisibility(View.VISIBLE);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
 
-            @Override
-            public void onPermissionDenied(List<String> deniedPermissions) {
-                Toast.makeText(ImageCompressorPage.this, "Permission Denied\n" + deniedPermissions.toString(), Toast.LENGTH_SHORT).show();
-            }
-        };
-        TedPermission.create()
-                .setPermissionListener(permissionlistener)
-                .setDeniedMessage("If you reject permission,you can not use this service\n\nPlease turn on permissions at [Setting] > [Permission]")
-                .setPermissions(Manifest.permission.CAMERA, Manifest.permission.READ_EXTERNAL_STORAGE,Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                .check();
 
     }
-    public void openImage(){
-       TedBottomPicker.OnImageSelectedListener listener = new TedBottomPicker.OnImageSelectedListener(){
 
-           @Override
-           public void onImageSelected(Uri uri) {
-               try {
-//                   Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(),uri);
-                   final InputStream imageStream = getContentResolver().openInputStream(uri);
-                   final Bitmap bitmap = BitmapFactory.decodeStream(imageStream);
-                   imageStart.setImageBitmap(bitmap);
-                   originalImage = new File(uri.getPath().replace("raw/",""));
-                   size_image_start.setText("Size: " + Formatter.formatShortFileSize(ImageCompressorPage.this, originalImage.length()));
-                   card_size_start.setVisibility(View.VISIBLE);
-               }catch (Exception e){
-                   Toast.makeText(ImageCompressorPage.this, e.getMessage(), Toast.LENGTH_SHORT).show();
-               }
-           }
-       };
+//    public void requestPermissions(){
+//
+//        PermissionListener permissionlistener = new PermissionListener() {
+//            @Override
+//            public void onPermissionGranted() {
+//                Toast.makeText(ImageCompressorPage.this, "Permission Granted", Toast.LENGTH_SHORT).show();
+//            }
+//
+//            @Override
+//            public void onPermissionDenied(List<String> deniedPermissions) {
+//                Toast.makeText(ImageCompressorPage.this, "Permission Denied\n" + deniedPermissions.toString(), Toast.LENGTH_SHORT).show();
+//            }
+//
+//
+//        };
+//
+//        TedPermission.create()
+//                .setPermissionListener(permissionlistener)
+//                .setDeniedMessage("If you reject permission,you can not use this service\n\nPlease turn on permissions at [Setting] > [Permission]")
+//                .setPermissions(Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE,Manifest.permission.CAMERA)
+//                .check();
+//
+//
+////        PermissionListener permissionlistener = new PermissionListener() {
+////            @Override
+////            public void onPermissionGranted() {
+////                Toast.makeText(ImageCompressorPage.this, "Permission Granted", Toast.LENGTH_SHORT).show();
+////                openImage();
+////            }
+////
+////            @Override
+////            public void onPermissionDenied(List<String> deniedPermissions) {
+////                Toast.makeText(ImageCompressorPage.this, "Permission Denied\n" + deniedPermissions.toString(), Toast.LENGTH_SHORT).show();
+////            }
+////        };
+////        TedPermission.create()
+////                .setPermissionListener(permissionlistener)
+////                .setDeniedMessage("If you reject permission,you can not use this service\n\nPlease turn on permissions at [Setting] > [Permission]")
+////                .setPermissions(Manifest.permission.WRITE_EXTERNAL_STORAGE,Manifest.permission.CAMERA, Manifest.permission.READ_EXTERNAL_STORAGE)
+////                .check();
+//
+//    }
+//    public void openImage(){
+//       TedBottomPicker.OnImageSelectedListener listener = new TedBottomPicker.OnImageSelectedListener(){
+//
+//           @Override
+//           public void onImageSelected(Uri uri) {
+//               try {
+////                   Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(),uri);
+//                   final InputStream imageStream = getContentResolver().openInputStream(uri);
+//                   final Bitmap bitmap = BitmapFactory.decodeStream(imageStream);
+//                   imageStart.setImageBitmap(bitmap);
+//                   originalImage = new File(uri.getPath().replace("raw/",""));
+//                   size_image_start.setText("Size: " + Formatter.formatShortFileSize(ImageCompressorPage.this, originalImage.length()));
+//                   card_size_start.setVisibility(View.VISIBLE);
+//               }catch (Exception e){
+//                   Toast.makeText(ImageCompressorPage.this, e.getMessage(), Toast.LENGTH_SHORT).show();
+//               }
+//           }
+//       };
 
-        TedBottomPicker tedBottomPicker = new TedBottomPicker.Builder(ImageCompressorPage.this)
-                .setOnImageSelectedListener(listener).create();
-        tedBottomPicker.show(getSupportFragmentManager());
-    }
+//        TedBottomPicker tedBottomPicker = new TedBottomPicker.Builder(ImageCompressorPage.this)
+//                .setOnImageSelectedListener(listener).create();
+//        tedBottomPicker.show(getSupportFragmentManager());
+//}
     void getView(){
         imageStart = findViewById(R.id.image_1);
         imageEnd = findViewById(R.id.image_2);

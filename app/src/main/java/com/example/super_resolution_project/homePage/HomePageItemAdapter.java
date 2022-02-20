@@ -45,13 +45,11 @@ public class HomePageItemAdapter extends RecyclerView.Adapter<HomePageItemHodel>
 
         if (position == 0){
             holder.getLayout().setOnClickListener(v -> {
-
-                v.getContext().startActivity(new Intent(v.getContext(), ImageCompressorPage.class));
-
+                v.getContext().startActivity(new Intent(v.getContext(), EditImageActivity.class));
             });
         }else if (position == 1){
             holder.getLayout().setOnClickListener(v -> {
-                v.getContext().startActivity(new Intent(v.getContext(), EditImageActivity.class));
+                v.getContext().startActivity(new Intent(v.getContext(), ImageCompressorPage.class));
             });
         }
         else if (position == 2){

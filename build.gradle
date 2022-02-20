@@ -21,6 +21,7 @@ allprojects {
         mavenCentral()
         flatDir { dirs 'libs' }
         jcenter() // Warning: this repository is going to shut down soon
+        maven { url "https://jitpack.io" }
         def githubProperties = new Properties()
         githubProperties.load(new FileInputStream(rootProject.file("github.properties")))
         repositories {

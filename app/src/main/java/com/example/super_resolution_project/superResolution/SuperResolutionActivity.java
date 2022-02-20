@@ -1,9 +1,11 @@
 package com.example.super_resolution_project.superResolution;
 
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
 
 import android.Manifest;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
@@ -22,11 +24,13 @@ import com.chaquo.python.Python;
 import com.chaquo.python.android.AndroidPlatform;
 import com.example.super_resolution_project.R;
 import com.example.super_resolution_project.imageCompressor.ImageCompressorPage;
+import com.github.dhaval2404.imagepicker.ImagePicker;
 import com.gun0912.tedpermission.PermissionListener;
 import com.gun0912.tedpermission.normal.TedPermission;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
@@ -64,6 +68,7 @@ public class SuperResolutionActivity extends AppCompatActivity {
         }
 
         cardView2.setOnClickListener(v -> {
+            System.out.println("Bắt đầu");
             bitmapDrawable = (BitmapDrawable) imageStart.getDrawable();
             bitmap = bitmapDrawable.getBitmap();
             imageString = getStringImage(bitmap);
@@ -71,16 +76,32 @@ public class SuperResolutionActivity extends AppCompatActivity {
             final Python py = Python.getInstance();
 
             PyObject pyObject = py.getModule("ESGAN");
+            System.out.println("Đang làm");
+            System.out.println("Sup path: " + URI);
+            PyObject pyObject1 = pyObject.callAttr("processing",imageString);
 
-            PyObject pyObject1 = pyObject.callAttr("processing",URI);
 
+//            String deString = pyObject1.toString();
+//            byte data[] = Base64.decode(deString,Base64.DEFAULT);
+//            Bitmap bitmap1 = BitmapFactory.decodeByteArray(data,0,data.length);
+//            imageEnd.setImageBitmap(bitmap1);
             String deString = pyObject1.toString();
             byte data[] = Base64.decode(deString,Base64.DEFAULT);
             Bitmap bitmap1 = BitmapFactory.decodeByteArray(data,0,data.length);
+            cardView5.setVisibility(View.VISIBLE);
             imageEnd.setImageBitmap(bitmap1);
+
+            try {
+                compressorImage = new Compressor(SuperResolutionActivity.this).
+                        setQuality(100).setCompressFormat(Bitmap.CompressFormat.JPEG)
+                        .setDestinationDirectoryPath(filePath).compressToFile(originalImage);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
             File finalFile = new File(filePath, originalImage.getName());
             size_image_end.setText("Size: " + Formatter.formatShortFileSize(SuperResolutionActivity.this, finalFile.length()));
             card_size_end.setVisibility(View.VISIBLE);
+            System.out.println("Kết thúc");
         });
 
 
@@ -127,55 +148,86 @@ public class SuperResolutionActivity extends AppCompatActivity {
 //    }
     public void eventLoadImame(){
         cardView1.setOnClickListener(v -> {
-            requestPermissions();
+           // requestPermissions();
+            ImagePicker.with(SuperResolutionActivity.this)
+                    .galleryOnly()
+//                    .cameraOnly()
+//                    .cropSquare()
+                    .crop()	    			//Crop image(Optional), Check Customization for more option
+                    .compress(2048)			//Final image size will be less than 1 MB(Optional)
+                    .maxResultSize(1080, 1080)	//Final image resolution will be less than 1080 x 1080(Optional)
+                    .start();
         });
 
     }
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data){
+        super.onActivityResult(requestCode,resultCode,data);
+        Uri uri = data.getData();
+        final InputStream imageStream;
 
-    public void requestPermissions(){
-        PermissionListener permissionlistener = new PermissionListener() {
-            @Override
-            public void onPermissionGranted() {
-                Toast.makeText(SuperResolutionActivity.this, "Permission Granted", Toast.LENGTH_SHORT).show();
-                openImage();
-            }
+        try {
+            imageStream = getContentResolver().openInputStream(uri);
+            final Bitmap bitmap = BitmapFactory.decodeStream(imageStream);
+            imageStart.setImageBitmap(bitmap);
 
-            @Override
-            public void onPermissionDenied(List<String> deniedPermissions) {
-                Toast.makeText(SuperResolutionActivity.this, "Permission Denied\n" + deniedPermissions.toString(), Toast.LENGTH_SHORT).show();
-            }
-        };
-        TedPermission.create()
-                .setPermissionListener(permissionlistener)
-                .setDeniedMessage("If you reject permission,you can not use this service\n\nPlease turn on permissions at [Setting] > [Permission]")
-                .setPermissions(Manifest.permission.CAMERA, Manifest.permission.READ_EXTERNAL_STORAGE,Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                .check();
+            //    imageStart.setImageURI(uri);
+
+            originalImage = new File(uri.getPath());
+            size_image_start.setText("Size: " + Formatter.formatShortFileSize(SuperResolutionActivity.this, originalImage.length()));
+            card_size_start.setVisibility(View.VISIBLE);
+            URI = uri.getPath();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+
 
     }
-    public void openImage(){
-        TedBottomPicker.OnImageSelectedListener listener = new TedBottomPicker.OnImageSelectedListener(){
 
-            @Override
-            public void onImageSelected(Uri uri) {
-                try {
-//                   Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(),uri);
-                    final InputStream imageStream = getContentResolver().openInputStream(uri);
-                    final Bitmap bitmap = BitmapFactory.decodeStream(imageStream);
-                    imageStart.setImageBitmap(bitmap);
-                    originalImage = new File(uri.getPath().replace("raw/",""));
-                    size_image_start.setText("Size: " + Formatter.formatShortFileSize(SuperResolutionActivity.this, originalImage.length()));
-                    card_size_start.setVisibility(View.VISIBLE);
-                    URI = uri.getPath();
-                }catch (Exception e){
-                    Toast.makeText(SuperResolutionActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
-                }
-            }
-        };
-
-        TedBottomPicker tedBottomPicker = new TedBottomPicker.Builder(SuperResolutionActivity.this)
-                .setOnImageSelectedListener(listener).create();
-        tedBottomPicker.show(getSupportFragmentManager());
-    }
+//    public void requestPermissions(){
+//        PermissionListener permissionlistener = new PermissionListener() {
+//            @Override
+//            public void onPermissionGranted() {
+//                Toast.makeText(SuperResolutionActivity.this, "Permission Granted", Toast.LENGTH_SHORT).show();
+//                openImage();
+//            }
+//
+//            @Override
+//            public void onPermissionDenied(List<String> deniedPermissions) {
+//                Toast.makeText(SuperResolutionActivity.this, "Permission Denied\n" + deniedPermissions.toString(), Toast.LENGTH_SHORT).show();
+//            }
+//        };
+//        TedPermission.create()
+//                .setPermissionListener(permissionlistener)
+//                .setDeniedMessage("If you reject permission,you can not use this service\n\nPlease turn on permissions at [Setting] > [Permission]")
+//                .setPermissions(Manifest.permission.CAMERA, Manifest.permission.READ_EXTERNAL_STORAGE,Manifest.permission.WRITE_EXTERNAL_STORAGE)
+//                .check();
+//
+//    }
+//    public void openImage(){
+//        TedBottomPicker.OnImageSelectedListener listener = new TedBottomPicker.OnImageSelectedListener(){
+//
+//            @Override
+//            public void onImageSelected(Uri uri) {
+//                try {
+////                   Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(),uri);
+//                    final InputStream imageStream = getContentResolver().openInputStream(uri);
+//                    final Bitmap bitmap = BitmapFactory.decodeStream(imageStream);
+//                    imageStart.setImageBitmap(bitmap);
+//                    originalImage = new File(uri.getPath().replace("raw/",""));
+//                    size_image_start.setText("Size: " + Formatter.formatShortFileSize(SuperResolutionActivity.this, originalImage.length()));
+//                    card_size_start.setVisibility(View.VISIBLE);
+//                    URI = uri.getPath();
+//                }catch (Exception e){
+//                    Toast.makeText(SuperResolutionActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
+//                }
+//            }
+//        };
+//
+//        TedBottomPicker tedBottomPicker = new TedBottomPicker.Builder(SuperResolutionActivity.this)
+//                .setOnImageSelectedListener(listener).create();
+//        tedBottomPicker.show(getSupportFragmentManager());
+//    }
     void getView(){
         imageStart = findViewById(R.id.image_1);
         imageEnd = findViewById(R.id.image_2);

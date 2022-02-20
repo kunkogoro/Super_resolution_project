@@ -30,14 +30,10 @@ public class HomePageActivity extends AppCompatActivity {
         getData();
     }
     public void getData(){
-        list.add(new OneItemHome(R.raw.camera_1,"ABC"));
-        list.add(new OneItemHome(R.raw.camera_2,"ABC"));
-        list.add(new OneItemHome(R.raw.camara_3,"ABC"));
-        list.add(new OneItemHome(R.raw.camera_4,"ABC"));
-        list.add(new OneItemHome(R.raw.camera_1,"ABC"));
-        list.add(new OneItemHome(R.raw.camera_2,"ABC"));
-        list.add(new OneItemHome(R.raw.camara_3,"ABC"));
-        list.add(new OneItemHome(R.raw.camera_4,"ABC"));
+        list.add(new OneItemHome(R.raw.camera_1,"Chỉnh sửa ảnh"));
+        list.add(new OneItemHome(R.raw.camera_2,"Nén ảnh"));
+        list.add(new OneItemHome(R.raw.camara_3,"Cải thiện ảnh"));
+        list.add(new OneItemHome(R.raw.camera_4,"Hướng dẫn"));
     }
     public void init(){
         GridLayoutManager layoutManager = new GridLayoutManager(this,2);

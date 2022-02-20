@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/bg_main"
     tools:context=".editImage.EditImageActivity">
 
     <TextView
@@ -16,8 +17,8 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0"
         android:text="Chỉnh sửa hình ảnh"
-        android:textSize="30sp"
-        android:textColor="@color/bg_main"
+        android:textSize="25sp"
+        android:textColor="@color/white"
         tools:ignore="MissingConstraints" />
 
     <Button
@@ -27,9 +28,23 @@
         android:text="Tải ảnh lên"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.216"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textView3"
-        app:layout_constraintVertical_bias="0.02"
+        app:layout_constraintVertical_bias="0.031"
+        tools:ignore="MissingConstraints"></Button>
+
+    <Button
+        android:id="@+id/button11"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Lưu ảnh"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.806"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textView3"
+        app:layout_constraintVertical_bias="0.031"
         tools:ignore="MissingConstraints"></Button>
 
     <ImageView
